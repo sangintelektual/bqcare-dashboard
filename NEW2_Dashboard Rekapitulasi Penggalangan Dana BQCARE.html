@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Login | BQCARE Dashboard</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f8f8f8;
+    }
+
+    /* ===== LOGIN PAGE ===== */
+    #loginPage {
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #800000; /* merah tua */
+    }
+
+    .login-box {
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px #0003;
+      width: 300px;
+      text-align: center;
+    }
+
+    .login-box h2 {
+      margin-bottom: 20px;
+      color: #800000;
+    }
+
+    .login-box input {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    .login-box button {
+      width: 100%;
+      padding: 10px;
+      background: #800000;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    /* ===== DASHBOARD PAGE ===== */
+    #dashboardPage {
+      display: none;
+      padding: 20px;
+    }
+
+    h1, h2 {
+      color: #800000;
+    }
+
+    form {
+      background: white;
+      padding: 20px;
+      margin-top: 20px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+
+    form input {
+      width: 100%;
+      padding: 10px;
+      margin: 5px 0;
+      box-sizing: border-box;
+    }
+
+    button {
+      background: #800000;
+      color: white;
+      padding: 10px;
+      border: none;
+      margin-top: 10px;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+
+    .summary {
+      background: #fff0f0;
+      padding: 15px;
+      margin-top: 20px;
+      border-left: 5px solid #800000;
+    }
+
+    .container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+
+    .left, .right {
+      flex: 1;
+      min-width: 300px;
+    }
+
+    table {
+      width: 100%;
+      margin-top: 20px;
+      border-collapse: collapse;
+      background: white;
+    }
+
+    th, td {
+      border: 1px solid #ccc;
+      padding: 10px;
+      text-align: center;
+    }
+
+    th {
+      background: #800000;
+      color: white;
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 40px;
+      font-size: 14px;
+      color: #888;
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Login Page -->
+<div id="loginPage">
+  <div class="login-box">
+    <h2>Login BQCARE</h2>
+    <input type="text" id="username" placeholder="Username" />
+    <input type="password" id="password" placeholder="Password" />
+    <button onclick="login()">Masuk</button>
+  </div>
+</div>
+
+<!-- Dashboard Page -->
+<div id="dashboardPage">
+  <h1>Dashboard Penggalangan Dana BQCARE</h1>
+
+  <div class="summary" id="summaryBox"></div>
+
+  <form id="inputForm">
+    <h2>Input Donasi</h2>
+    <input type="text" id="idDonasi" placeholder="ID Donasi (D001)" required />
+    <input type="date" id="tanggal" required />
+    <input type="text" id="nama" placeholder="Nama Donatur" required />
+    <input type="text" id="program" placeholder="Program (Wakaf Quran)" required />
+    <input type="number" id="jumlah" placeholder="Jumlah Donasi (Rp)" required />
+    <button type="submit">Simpan Donasi</button>
+  </form>
+
+  <div class="container">
+    <div class="left">
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Tanggal</th>
+            <th>Donatur</th>
+            <th>Program</th>
+            <th>Jumlah (Rp)</th>
+          </tr>
+        </thead>
+        <tbody id="dataTable"></tbody>
+      </table>
+    </div>
+    <div class="right">
+      <canvas id="donasiChart" height="300"></canvas>
+    </div>
+  </div>
+
+  <footer>Copyright © 2025 BQCARE. All rights reserved.</footer>
+</div>
+
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  // Login Logic
+  function login() {
+    const user = document.getElementById("username").value;
+    const pass = document.getElementById("password").value;
+
+    if (user === "admin" && pass === "bqcare2025") {
+      document.getElementById("loginPage").style.display = "none";
+      document.getElementById("dashboardPage").style.display = "block";
+    } else {
+      alert("Username atau Password salah!");
+    }
+  }
+
+  // Data dan Render
+  let data = [
+    { id: "D001", tanggal: "2025-07-01", nama: "Ahmad", program: "Wakaf Asrama", jumlah: 100000 },
+    { id: "D002", tanggal: "2025-07-02", nama: "Siti", program: "Wakaf Quran", jumlah: 50000 }
+  ];
+
+  const table = document.getElementById("dataTable");
+  const summaryBox = document.getElementById("summaryBox");
+  const ctx = document.getElementById("donasiChart").getContext("2d");
+  let chart;
+
+  function renderTable() {
+    table.innerHTML = "";
+    let totalDonasi = 0;
+
+    data.forEach(item => {
+      totalDonasi += item.jumlah;
+      const row = `<tr>
+        <td>${item.id}</td>
+        <td>${item.tanggal}</td>
+        <td>${item.nama}</td>
+        <td>${item.program}</td>
+        <td>${item.jumlah.toLocaleString()}</td>
+      </tr>`;
+      table.innerHTML += row;
+    });
+
+    summaryBox.innerHTML = `
+      <strong>Total Dana Terkumpul:</strong> Rp ${totalDonasi.toLocaleString()}<br>
+      <strong>Jumlah Donasi:</strong> ${data.length} transaksi
+    `;
+  }
+
+  function renderChart() {
+    const programTotals = {};
+    data.forEach(item => {
+      programTotals[item.program] = (programTotals[item.program] || 0) + item.jumlah;
+    });
+
+    const labels = Object.keys(programTotals);
+    const values = Object.values(programTotals);
+
+    if (chart) chart.destroy();
+    chart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Donasi per Program',
+          data: values,
+          backgroundColor: '#800000'
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: { y: { beginAtZero: true } }
+      }
+    });
+  }
+
+  document.getElementById("inputForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+    const newData = {
+      id: document.getElementById("idDonasi").value,
+      tanggal: document.getElementById("tanggal").value,
+      nama: document.getElementById("nama").value,
+      program: document.getElementById("program").value,
+      jumlah: parseInt(document.getElementById("jumlah").value)
+    };
+    data.push(newData);
+    renderTable();
+    renderChart();
+    this.reset();
+  });
+
+  renderTable();
+  renderChart();
+</script>
+
+</body>
+</html>
